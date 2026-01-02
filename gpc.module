@@ -1,0 +1,132 @@
+<?php
+/**
+ * @file
+ * A block that displays Global Privacy Control settings from the browser.
+ */
+
+/**
+ * Implements hook_block_info().
+ */
+function gpc_block_info() {
+  $blocks['gpc-status'] = array(
+    'info' => t('GPC Visual Confirmation'),
+    'description' => t('Displays the viewer\'s Global Privacy Control settings from the browser.'),
+  );
+
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function gpc_block_view($delta = '', $settings = array(), $contexts = array()) {
+  // This example is adapted from node.module.
+  $block = array();
+
+  switch ($delta) {
+    case 'gpc-status':
+      $icon_options = array(
+        'attributes' => array(
+          'width' => '25',
+          'class' => array('gpc-icon'),
+        ),
+      );
+
+      if (gpc_is_enabled()) {
+        $icon_options['attributes']['class'][] = 'gpc-enabled';
+        $icon = icon('check-circle', $icon_options);
+        $text = t('Global Privacy Control signal detected.');
+      }
+      else {
+        $icon_options['attributes']['class'][] = 'gpc-disabled';
+
+        if (isset($settings['link']) && $settings['link'] == 'yeslink') {
+          $url = 'https://globalprivacycontrol.org/#download';
+          $replacements = array('@url' => $url);
+          $link_text = 'GPC signal not detected. <a href="@url">Download a browser/extension that supports Global Privacy Control.</a>';
+        }
+        else {
+          $replacements = array();
+          $link_text = 'Global Privacy Control signal not detected.';
+        }
+
+        $icon = icon('warning-circle', $icon_options);
+        $text = t($link_text, $replacements);
+      }
+
+      $path = backdrop_get_path('module', 'gpc');
+      $block['subject'] = '';
+      $block['content'] = array(
+        '#theme' => 'container__gpc',
+        '#children' => $icon . $text,
+        '#attributes' => array('class' => array('gpc-banner')),
+        '#attached' => array('css' => array($path . '/css/gpc.css')),
+      );
+      if (isset($settings['background']) && $settings['background'] != 'none') {
+        $block['content']['#attributes']['class'][] = $settings['background'];
+      }
+      if (isset($settings['position']) && $settings['position'] != 'none') {
+        $block['content']['#attributes']['class'][] = $settings['position'];
+      }
+
+      break;
+  }
+
+  return $block;
+}
+
+/**
+ * Implements hook_block_configure().
+ */
+function gpc_block_configure($delta = '', $settings = array()) {
+  // This example comes from node.module.
+  $form = array();
+
+  if ($delta == 'gpc-status') {
+    $settings += array(
+      'background' => 'dark',
+      'position' => 'none',
+      'link' => 'yeslink',
+    );
+
+    $form['background'] = array(
+      '#type' => 'radios',
+      '#title' => t('Block background color'),
+      '#default_value' => $settings['background'],
+      '#options' => array(
+        'none' => t('None'),
+        'dark' => t('Black'),
+        'light' => t('White'),
+      ),
+    );
+    $form['position'] = array(
+      '#type' => 'radios',
+      '#title' => t('Special Positioning'),
+      '#default_value' => $settings['position'],
+      '#options' => array(
+        'none' => t('None'),
+        'fixed-top' => t('Fixed at Top: Anchors the banner to the top of the browser window'),
+        'fixed-bottom' => t('Fixed at Bottom: Anchors the banner to the bottom of the browser window'),
+      ),
+    );
+    $form['link'] = array(
+      '#type' => 'radios',
+      '#title' => t('Include Download Link'),
+      '#default_value' => $settings['background'],
+      '#options' => array(
+        'nolink' => t('No'),
+        'yeslink' => t('Yes'),
+      ),
+    );
+  }
+
+  return $form;
+}
+
+
+/**
+ * Helper function: determines whether GPC is enabled.
+ */
+function gpc_is_enabled() {
+  return isset($_SERVER['HTTP_SEC_GPC']) && $_SERVER['HTTP_SEC_GPC'] === '1';
+}

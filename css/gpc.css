@@ -1,0 +1,58 @@
+/**
+ * @file
+ * Custom CSS for the GPC module.
+ */
+
+.gpc-banner {
+  display: flex;
+  padding: 1em;
+  align-items: center;   /* Vertically centers the children (SVG and span) */
+  justify-content: center; /* Horizontally centers the children within the paragraph */
+  text-align: center;
+}
+
+svg.icon.gpc-icon {
+  margin-right: .75em; /* LTR */
+  border-radius: 1em
+}
+[dir="rtl"] svg.icon.gpc-icon {
+  margin-left: .75em;
+}
+
+svg.icon.gpc-disabled {
+  background-color: red;
+}
+svg.icon.gpc-enabled {
+  background-color: #cfde56;
+}
+
+.gpc-banner.dark {
+  background-color: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  a {
+    color: #fff;
+  }
+}
+.gpc-banner.light {
+  background-color: rgba(255, 255, 255, 0.75);
+  color: #000;
+  a {
+    color: #000;
+  }
+}
+
+.gpc-banner.fixed-bottom {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+.gpc-banner.fixed-top {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+html.admin-bar .gpc-banner.fixed-top {
+  top: 36px;
+}

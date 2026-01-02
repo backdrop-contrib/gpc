@@ -1,0 +1,14 @@
+type = module
+name = GPC Visual Confirmation
+description = A block that displays Global Privacy Control settings from the browser.
+backdrop = 1.x
+
+; Link to the module's configuration page.
+configure = admin/config/user-interface/gpc
+
+; Add custom CSS & JS files.
+;stylesheets[all][] = css/mymodule.css
+;scripts[] = js/mymodule.js
+
+package = User interface
+tags[] = Privacy
