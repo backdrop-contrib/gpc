@@ -5,6 +5,49 @@
  */
 
 /**
+ * Implements hook_config_info().
+ */
+function gpc_config_info() {
+  $prefixes['gpc.settings'] = array(
+    'label' => t('GPC Visual Confirmation settings'),
+    'group' => t('Configuration'),
+  );
+  return $prefixes;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function gpc_permission() {
+  $permissions = array(
+    'confugre gpc visual confirmation' => array(
+      'title' => t('Configure Global Privacy Control Visual Confirmation.'),
+    ),
+  );
+
+  return $permissions;
+}
+
+/**
+ * Implements hook_menu().
+ */
+function gpc_menu() {
+  $items = array();
+
+  $items['admin/config/user-interface/gpc'] = array(
+    'title' => 'Configure GPC Visual Confirmation',
+    'description' => t('Adjust settings for Global Privacy Control Visual Confirmation.'),
+    'page callback' => 'backdrop_get_form',
+    'page arguments' => array('gpc_config_form'),
+    'access arguments' => array('confugre gpc visual confirmation'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'gpc.admin.inc',
+  );
+
+  return $items;
+}
+
+/**
  * Implements hook_block_info().
  */
 function gpc_block_info() {
@@ -25,34 +68,10 @@ function gpc_block_view($delta = '', $settings = array(), $contexts = array()) {
 
   switch ($delta) {
     case 'gpc-status':
-      $icon_options = array(
-        'attributes' => array(
-          'width' => '25',
-          'class' => array('gpc-icon'),
-        ),
-      );
 
-      if (gpc_is_enabled()) {
-        $icon_options['attributes']['class'][] = 'gpc-enabled';
-        $icon = icon('check-circle', $icon_options);
-        $text = t('Global Privacy Control signal detected.');
-      }
-      else {
-        $icon_options['attributes']['class'][] = 'gpc-disabled';
-
-        if (isset($settings['link']) && $settings['link'] == 'yeslink') {
-          $url = 'https://globalprivacycontrol.org/#download';
-          $replacements = array('@url' => $url);
-          $link_text = 'GPC signal not detected. <a href="@url">Download a browser/extension that supports Global Privacy Control.</a>';
-        }
-        else {
-          $replacements = array();
-          $link_text = 'Global Privacy Control signal not detected.';
-        }
-
-        $icon = icon('warning-circle', $icon_options);
-        $text = t($link_text, $replacements);
-      }
+      $enabled = gpc_is_enabled();
+      $icon = _gpc_build_icon($enabled);
+      $text = _gpc_build_text($enabled);
 
       $path = backdrop_get_path('module', 'gpc');
       $block['subject'] = '';
@@ -112,7 +131,7 @@ function gpc_block_configure($delta = '', $settings = array()) {
     $form['link'] = array(
       '#type' => 'radios',
       '#title' => t('Include Download Link'),
-      '#default_value' => $settings['background'],
+      '#default_value' => $settings['link'],
       '#options' => array(
         'nolink' => t('No'),
         'yeslink' => t('Yes'),
@@ -123,10 +142,112 @@ function gpc_block_configure($delta = '', $settings = array()) {
   return $form;
 }
 
+/*******************************************************************************
+ * Theme / Preprocess functions.
+ ******************************************************************************/
+
+/**
+ * Prepares variables for Layout templates.
+ */
+function gpc_preprocess_page(&$variables) {
+  // Performance: Skip this entirely for AJAX requests.
+  if (!backdrop_is_html()) {
+    return;
+  }
+
+  $config = config('gpc.settings');
+  if ($config->get('position') != 'none') {
+    // Add a banner.
+    $enabled = gpc_is_enabled();
+    $icon = _gpc_build_icon($enabled);
+    $text = _gpc_build_text($enabled);
+    $path = backdrop_get_path('module', 'gpc');
+    $banner = array(
+      '#theme' => 'container__gpc',
+      '#children' => $icon . $text,
+      '#attributes' => array(
+        'id' => 'gpc-banner',
+        'class' => array('gpc-banner'),
+      ),
+      '#attached' => array('css' => array($path . '/css/gpc.css')),
+    );
+    $background = $config->get('background');
+    if ($background != 'none') {
+      $banner['#attributes']['class'][] = $background;
+    }
+    $position = $config->get('position');
+    if ($position != 'none') {
+      $banner['#attributes']['class'][] = $position;
+    }
+
+    $variables['page_bottom'] .= backdrop_render($banner);
+  }
+}
+
+/*******************************************************************************
+ * Helper functions.
+ ******************************************************************************/
 
 /**
  * Helper function: determines whether GPC is enabled.
  */
 function gpc_is_enabled() {
-  return isset($_SERVER['HTTP_SEC_GPC']) && $_SERVER['HTTP_SEC_GPC'] === '1';
+  $enabled = &backdrop_static(__FUNCTION__);
+  if (!isset($enabled)) {
+    $enabled = isset($_SERVER['HTTP_SEC_GPC']) && $_SERVER['HTTP_SEC_GPC'] === '1';
+  }
+
+  return $enabled;
+}
+
+/**
+ * Helper function: Builds the GPC icon.
+ */
+function _gpc_build_text($enabled) {
+  if (!isset($enabled)) {
+    $enabled = gpc_is_enabled();
+  }
+  if ($enabled) {
+    $text = t('Your Global Privacy Control opt-out prefernce has been detected.');
+  }
+  else {
+    if (isset($settings['link']) && $settings['link'] == 'yeslink') {
+      $url = 'https://globalprivacycontrol.org/#download';
+      $replacements = array('@url' => $url);
+      $link_text = 'Global Privacy Control opt-out prefernce not detected. <a href="@url">Download a browser/extension that supports Global Privacy Control.</a>';
+    }
+    else {
+      $replacements = array();
+      $link_text = 'Global Privacy Control opt-out prefernce not detected.';
+    }
+
+    $text = t($link_text, $replacements);
+  }
+
+  return $text;
+}
+
+/**
+ * Helper function: Builds the GPC icon.
+ */
+function _gpc_build_icon($enabled) {
+  if (!isset($enabled)) {
+    $enabled = gpc_is_enabled();
+  }
+  $icon_options = array(
+    'attributes' => array(
+      'width' => '25',
+      'class' => array('gpc-icon'),
+    ),
+  );
+  if ($enabled) {
+    $icon_options['attributes']['class'][] = 'gpc-enabled';
+    $icon = icon('check-circle', $icon_options);
+  }
+  else {
+    $icon_options['attributes']['class'][] = 'gpc-disabled';
+    $icon = icon('warning-circle', $icon_options);
+  }
+
+  return $icon;
 }
