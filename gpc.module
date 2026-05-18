@@ -77,7 +77,7 @@ function gpc_block_view($delta = '', $settings = array(), $contexts = array()) {
       $block['subject'] = '';
       $block['content'] = array(
         '#theme' => 'container__gpc',
-        '#children' => $icon . $text,
+        '#children' => $icon . '<span>' . $text . '</span>',
         '#attributes' => array('class' => array('gpc-banner')),
         '#attached' => array('css' => array($path . '/css/gpc.css')),
       );
@@ -164,7 +164,7 @@ function gpc_preprocess_page(&$variables) {
     $path = backdrop_get_path('module', 'gpc');
     $banner = array(
       '#theme' => 'container__gpc',
-      '#children' => $icon . $text,
+      '#children' => $icon . '<span>' . $text . '</span>',
       '#attributes' => array(
         'id' => 'gpc-banner',
         'class' => array('gpc-banner'),
@@ -211,14 +211,15 @@ function _gpc_build_text($enabled) {
     $text = t('Your Global Privacy Control opt-out prefernce has been detected.');
   }
   else {
+    $download_url = 'https://globalprivacycontrol.org/#download';
+    $pdf_url = 'https://globalprivacycontrol.org/GPC_for_Users.pdf';
     if (isset($settings['link']) && $settings['link'] == 'yeslink') {
-      $url = 'https://globalprivacycontrol.org/#download';
-      $replacements = array('@url' => $url);
-      $link_text = 'Global Privacy Control opt-out prefernce not detected. <a href="@url">Download a browser/extension that supports Global Privacy Control.</a>';
+      $replacements = array('@url' => $pdf_url);
+      $link_text = 'We could not detect a &nbsp;<a href="@url">privacy preference</a>.<span class="lg-screen"> If you would like websites to recognize your privacy choices automatically, please check your browser privacy settings.</span>';
     }
     else {
       $replacements = array();
-      $link_text = 'Global Privacy Control opt-out prefernce not detected.';
+      $link_text = 'Privacy prefernce not detected.<span class="lg-screen">  If you would like websites to recognize your privacy choices automatically, please check your browser privacy settings.</span>';
     }
 
     $text = t($link_text, $replacements);

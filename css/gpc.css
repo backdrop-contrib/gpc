@@ -5,54 +5,71 @@
 
 .gpc-banner {
   display: flex;
-  padding: 1em;
+  padding: .5em;
   align-items: center;   /* Vertically centers the children (SVG and span) */
   justify-content: center; /* Horizontally centers the children within the paragraph */
   text-align: center;
-}
+  line-height: 1em;
 
-svg.icon.gpc-icon {
-  margin-right: .75em; /* LTR */
-  border-radius: 1em
-}
-[dir="rtl"] svg.icon.gpc-icon {
-  margin-left: .75em;
-}
+  .lg-screen {
+    display: none;
+  }
 
-svg.icon.gpc-disabled {
-  background-color: red;
-}
-svg.icon.gpc-enabled {
-  background-color: #cfde56;
-}
-
-.gpc-banner.dark {
-  background-color: rgba(0, 0, 0, 0.75);
-  color: #fff;
-  a {
+  &.dark {
+    background-color: rgba(0, 0, 0, 0.75);
     color: #fff;
+    a {
+      color: #fff;
+    }
   }
-}
-.gpc-banner.light {
-  background-color: rgba(255, 255, 255, 0.75);
-  color: #000;
-  a {
+  &.light {
+    background-color: rgba(255, 255, 255, 0.75);
     color: #000;
+    a {
+      color: #000;
+    }
+  }
+
+  &.fixed-bottom {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+  &.fixed-top {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+  }
+
+  svg.icon.gpc-icon {
+    margin-right: .75em; /* LTR */
+    border-radius: 1em
+  }
+  [dir="rtl"] svg.icon.gpc-icon {
+    margin-left: .75em;
+    margin-right: 0;
+  }
+
+  svg.icon.gpc-disabled {
+    color: yellow;
+  }
+  svg.icon.gpc-enabled {
+    color: #cfde56;
+  }
+
+  span {
+    line-height: 25px; /* match icon height */
   }
 }
 
-.gpc-banner.fixed-bottom {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+@media (min-width: 768px) {
+  .gpc-banner .lg-screen {
+    display: inline;
+  }
 }
-.gpc-banner.fixed-top {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-}
+
 html.admin-bar .gpc-banner.fixed-top {
   top: 36px;
 }
