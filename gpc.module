@@ -219,7 +219,7 @@ function _gpc_build_text($enabled) {
     }
     else {
       $replacements = array();
-      $link_text = 'Privacy prefernce not detected.<span class="lg-screen">  If you would like websites to recognize your privacy choices automatically, please check your browser privacy settings.</span>';
+      $link_text = 'Privacy preference not detected.<span class="lg-screen">  If you would like websites to recognize your privacy choices automatically, please check your browser privacy settings.</span>';
     }
 
     $text = t($link_text, $replacements);
